@@ -14,6 +14,13 @@ mod utils;
 
 use anyhow::Result;
 
+enum SymmetryMode {
+    InvertedRepeat,
+    InvertedComplementaryRepeat,
+    DirectRepeat,
+    DirectComplementaryRepeat,
+}
+
 /// Find all the [Inverted Repeats](https://en.wikipedia.org/wiki/Inverted_repeat) (IRs) in a sequence
 /// based on the provided parameters.
 ///
@@ -54,10 +61,16 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
     // Construct s = seq + '$' + complement(reverse(seq)) + '#'
     let n = sanitized_seq.len();
     let s_n = 2 * n + 2;
-    let mut s = vec![0u8; s_n];
+    let mut s: Vec<u8> = vec![0u8; s_n];
+    let symmetry_mode = SymmetryMode::DirectRepeat;
     for i in 0..n {
         s[i] = sanitized_seq[i];
-        s[n + 1 + i] = complement[sanitized_seq[n - 1 - i] as usize] as u8;
+        s[n + 1 + i] = match symmetry_mode {
+            SymmetryMode::InvertedRepeat => complement[sanitized_seq[n - 1 - i] as usize] as u8,
+            SymmetryMode::InvertedComplementaryRepeat => sanitized_seq[n - 1 - i] as u8,
+            SymmetryMode::DirectRepeat => sanitized_seq[i] as u8,
+            SymmetryMode::DirectComplementaryRepeat => complement[sanitized_seq[i] as usize] as u8,
+        };
     }
     s[n] = b'$';
     s[2 * n + 1] = b'#';
