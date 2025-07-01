@@ -1,8 +1,12 @@
 use anyhow::Result;
 use clap::Parser;
 
+use crate::SymmetryMode;
 use crate::config::{Config, SearchParams};
-use crate::constants::{DEFAULT_INPUT_FILE, DEFAULT_MAX_GAP, DEFAULT_MAX_LEN, DEFAULT_MIN_LEN, DEFAULT_MISMATCHES, DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME, OutputFormat};
+use crate::constants::{
+    DEFAULT_INPUT_FILE, DEFAULT_MAX_GAP, DEFAULT_MAX_LEN, DEFAULT_MIN_LEN, DEFAULT_MISMATCHES,
+    DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME, OutputFormat,
+};
 use crate::utils::safe_extract_records;
 use seq_io::fasta::{OwnedRecord, Record};
 
@@ -31,6 +35,10 @@ pub struct Cli {
     /// Maximum permissible mismatches.
     #[arg(long, short = 'x', default_value_t = DEFAULT_MISMATCHES)]
     pub mismatches: usize,
+
+    // TODO: Document and add default(?)
+    #[arg(long, short = 'S')]
+    pub symmetry_mode: SymmetryMode,
 
     /// Output filename.
     /// For multiple sequences this is treated as a folder.

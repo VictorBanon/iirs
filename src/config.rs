@@ -1,6 +1,32 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
-use crate::constants::{DEFAULT_INPUT_FILE, DEFAULT_MAX_GAP, DEFAULT_MAX_LEN, DEFAULT_MIN_LEN, DEFAULT_MISMATCHES, DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME, OutputFormat};
+use crate::constants::{
+    DEFAULT_INPUT_FILE, DEFAULT_MAX_GAP, DEFAULT_MAX_LEN, DEFAULT_MIN_LEN, DEFAULT_MISMATCHES,
+    DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME, OutputFormat,
+};
+
+#[derive(Debug, Default, Clone)]
+pub enum SymmetryMode {
+    #[default]
+    Inverted, // TODO: Pon comentario
+    InvertedComplementary,
+    Direct,
+    DirectComplementary,
+}
+
+impl std::str::FromStr for SymmetryMode {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "inverted" | "i" => Ok(SymmetryMode::Inverted),
+            "inverted_complementary" | "ic" => Ok(SymmetryMode::InvertedComplementary),
+            "direct" | "d" => Ok(SymmetryMode::Direct),
+            "direct_complementary" | "dc" => Ok(SymmetryMode::DirectComplementary),
+            _ => Err(format!("Invalid symmetry mode: {}", s)),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct SearchParams {
@@ -8,10 +34,19 @@ pub struct SearchParams {
     pub max_len: usize,
     pub max_gap: usize,
     pub mismatches: usize,
+    pub symmetry_mode: SymmetryMode,
 }
 
 impl SearchParams {
-    pub fn new(min_len: usize, max_len: usize, max_gap: usize, mismatches: usize) -> Result<Self> {
+    /// Constructor with symmetry mode as an argument. For Inverted Repeats use
+    /// SearchParams::new.
+    pub fn with_mode(
+        min_len: usize,
+        max_len: usize,
+        max_gap: usize,
+        mismatches: usize,
+        symmetry_mode: SymmetryMode,
+    ) -> Result<Self> {
         if min_len < 2 {
             return Err(anyhow!("min_len={} must not be less than 2.", min_len));
         }
@@ -35,7 +70,18 @@ impl SearchParams {
             max_len,
             max_gap,
             mismatches,
+            symmetry_mode,
         })
+    }
+
+    pub fn new(min_len: usize, max_len: usize, max_gap: usize, mismatches: usize) -> Result<Self> {
+        Self::with_mode(
+            min_len,
+            max_len,
+            max_gap,
+            mismatches,
+            SymmetryMode::default(),
+        )
     }
 
     pub fn check_bounds(&self, n: usize) -> Result<()> {
@@ -85,29 +131,6 @@ pub struct Config<'a> {
     pub params: SearchParams,
     pub output_file: &'a str,
     pub output_format: OutputFormat,
-}
-
-impl<'a> Config<'a> {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        input_file: &'a str,
-        seq_name: &'a str,
-        min_len: usize,
-        max_len: usize,
-        max_gap: usize,
-        mismatches: usize,
-        output_file: &'a str,
-        output_format: OutputFormat,
-    ) -> Result<Self> {
-        let params = SearchParams::new(min_len, max_len, max_gap, mismatches)?;
-        Ok(Self {
-            input_file,
-            seq_name,
-            params,
-            output_file,
-            output_format,
-        })
-    }
 }
 
 impl Default for Config<'_> {

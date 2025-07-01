@@ -2,7 +2,7 @@ mod cli;
 pub use cli::Cli;
 
 mod config;
-pub use config::{Config, SearchParams};
+pub use config::{Config, SearchParams, SymmetryMode};
 
 mod constants;
 pub use constants::OutputFormat;
@@ -14,12 +14,6 @@ mod utils;
 
 use anyhow::Result;
 
-enum SymmetryMode {
-    InvertedRepeat,
-    InvertedComplementaryRepeat,
-    DirectRepeat,
-    DirectComplementaryRepeat,
-}
 
 /// Find all the [Inverted Repeats](https://en.wikipedia.org/wiki/Inverted_repeat) (IRs) in a sequence
 /// based on the provided parameters.
@@ -62,14 +56,13 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
     let n = sanitized_seq.len();
     let s_n = 2 * n + 2;
     let mut s: Vec<u8> = vec![0u8; s_n];
-    let symmetry_mode = SymmetryMode::DirectRepeat;
     for i in 0..n {
         s[i] = sanitized_seq[i];
-        s[n + 1 + i] = match symmetry_mode {
-            SymmetryMode::InvertedRepeat => complement[sanitized_seq[n - 1 - i] as usize] as u8,
-            SymmetryMode::InvertedComplementaryRepeat => sanitized_seq[n - 1 - i] as u8,
-            SymmetryMode::DirectRepeat => sanitized_seq[i] as u8,
-            SymmetryMode::DirectComplementaryRepeat => complement[sanitized_seq[i] as usize] as u8,
+        s[n + 1 + i] = match params.symmetry_mode {
+            SymmetryMode::Inverted => complement[sanitized_seq[n - 1 - i] as usize] as u8,
+            SymmetryMode::InvertedComplementary => sanitized_seq[n - 1 - i] as u8,
+            SymmetryMode::Direct => sanitized_seq[i] as u8,
+            SymmetryMode::DirectComplementary => complement[sanitized_seq[i] as usize] as u8,
         };
     }
     s[n] = b'$';
@@ -123,8 +116,9 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
 ///
 /// // Simple example for the csv output format.
 /// let seq = "acbbgt".as_bytes();
+/// let params = SearchParams::new(3, 6, 2, 0).unwrap(); 
 /// let config = Config {
-///     params: SearchParams::new(3, 6, 2, 0).unwrap(),
+///     params,
 ///     output_format: OutputFormat::Csv,
 ///     // The remaining fields are not relevant here.
 ///     ..Default::default()
@@ -137,7 +131,14 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
 /// assert_eq!(format!("{}\n{}", &header, &irs_str), expected);
 ///
 /// // For the classic method, all the fields are used in the header.
-/// let config = Config::new("in.fasta", "seq0", 3, 6, 2, 0, "out.txt", OutputFormat::Classic).unwrap();
+/// let params = SearchParams::new(3, 6, 2, 0).unwrap(); 
+/// let config = Config {
+///     input_file: "in.fasta",
+///     seq_name: "seq0",
+///     params,
+///     output_file: "out.txt",
+///     output_format: OutputFormat::Classic,
+/// };
 /// let (header, irs_str) = stringify_irs(&config, &irs, &seq);
 /// let expected = "\
 ///     Palindromes of: in.fasta\n\

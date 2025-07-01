@@ -198,3 +198,19 @@ fn test_test_1() {
     };
     assert_eq!(find_irs_from_first_sequence(&config).len(), 84);
 }
+
+// TODO: add more tests! (and improve this one below!)
+
+#[test]
+fn test_simple_direct_mode() {
+    let seq = "aaaaaa".as_bytes();
+    let symmetry_mode = crate::SymmetryMode::Direct;
+    let params1 = SearchParams::with_mode(3, 6, 2, 0, symmetry_mode).unwrap();
+    let irs = find_irs(&params1, &seq).unwrap();
+    assert_eq!(irs.len(), 1);
+
+    let symmetry_mode = crate::SymmetryMode::default();
+    let params2 = SearchParams::with_mode(3, 6, 2, 0, symmetry_mode).unwrap();
+    let irs = find_irs(&params2, &seq).unwrap();
+    assert_eq!(irs.len(), 0);
+}
