@@ -2,10 +2,10 @@ use anyhow::{Result, anyhow};
 
 use crate::constants::{
     DEFAULT_INPUT_FILE, DEFAULT_MAX_GAP, DEFAULT_MAX_LEN, DEFAULT_MIN_LEN, DEFAULT_MISMATCHES,
-    DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME, OutputFormat,
+    DEFAULT_OUTPUT_FILE, DEFAULT_SEQ_NAME,
 };
 
-#[derive(Debug, Default, Clone)]
+#[derive(clap::ValueEnum, Debug, Default, Clone)]
 pub enum SymmetryMode {
     #[default]
     Inverted, // TODO: Pon comentario
@@ -121,6 +121,25 @@ impl Default for SearchParams {
             DEFAULT_MISMATCHES,
         )
         .unwrap()
+    }
+}
+
+#[derive(clap::ValueEnum, Debug, Clone, Default, PartialEq, Eq)]
+pub enum OutputFormat {
+    #[default]
+    Classic,
+    Csv,
+    Custom,
+}
+
+impl std::fmt::Display for OutputFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let fmted = match self {
+            Self::Classic => "classic",
+            Self::Csv => "csv",
+            Self::Custom => "custom",
+        };
+        write!(f, "{fmted}")
     }
 }
 

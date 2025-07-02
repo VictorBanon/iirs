@@ -2,10 +2,9 @@ mod cli;
 pub use cli::Cli;
 
 mod config;
-pub use config::{Config, SearchParams, SymmetryMode};
+pub use config::{Config, OutputFormat, SearchParams, SymmetryMode};
 
 mod constants;
-pub use constants::OutputFormat;
 
 mod algo;
 mod format;
@@ -13,7 +12,6 @@ mod matrix;
 mod utils;
 
 use anyhow::Result;
-
 
 /// Find all the [Inverted Repeats](https://en.wikipedia.org/wiki/Inverted_repeat) (IRs) in a sequence
 /// based on the provided parameters.
@@ -116,7 +114,7 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
 ///
 /// // Simple example for the csv output format.
 /// let seq = "acbbgt".as_bytes();
-/// let params = SearchParams::new(3, 6, 2, 0).unwrap(); 
+/// let params = SearchParams::new(3, 6, 2, 0).unwrap();
 /// let config = Config {
 ///     params,
 ///     output_format: OutputFormat::Csv,
@@ -131,7 +129,7 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
 /// assert_eq!(format!("{}\n{}", &header, &irs_str), expected);
 ///
 /// // For the classic method, all the fields are used in the header.
-/// let params = SearchParams::new(3, 6, 2, 0).unwrap(); 
+/// let params = SearchParams::new(3, 6, 2, 0).unwrap();
 /// let config = Config {
 ///     input_file: "in.fasta",
 ///     seq_name: "seq0",
