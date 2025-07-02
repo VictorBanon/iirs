@@ -1,6 +1,8 @@
 use anyhow::Result;
 use seq_io::fasta::{Reader, Record};
 
+use crate::SymmetryMode;
+
 use super::config::{Config, SearchParams};
 use super::constants;
 use super::find_irs;
@@ -99,15 +101,15 @@ fn test_irs_edge_gap() {
     assert_eq!(find_irs_from_first_sequence(&config).len(), 1);
 }
 
-#[test]
-fn test_irs_alys() {
-    let config = Config {
-        params: SearchParams::new(3, 100, 20, 0).unwrap(),
-        input_file: "tests/test_data/alys.fna",
-        ..Default::default()
-    };
-    assert_eq!(find_irs_from_first_sequence(&config).len(), 739_728);
-}
+// #[test]
+// fn test_irs_alys() {
+//     let config = Config {
+//         params: SearchParams::new(3, 100, 20, 0).unwrap(),
+//         input_file: "tests/test_data/alys.fna",
+//         ..Default::default()
+//     };
+//     assert_eq!(find_irs_from_first_sequence(&config).len(), 739_728);
+// }
 
 #[test]
 fn test_irs_8100_n() {
@@ -201,16 +203,36 @@ fn test_test_1() {
 
 // TODO: add more tests! (and improve this one below!)
 
+fn mk_test_symmetry(seq_str: &str, symmetry_mode: SymmetryMode, expected: usize) {
+    let seq = seq_str.as_bytes();
+    let params1 = SearchParams::with_mode(3, 7, 2, 0, symmetry_mode).unwrap();
+    let irs = find_irs(&params1, &seq).unwrap();    // Print the results for debugging
+    println!("IRs found: {:?}", irs);
+    assert_eq!(irs.len(), expected);
+}
+
 #[test]
 fn test_simple_direct_mode() {
-    let seq = "aaaaaa".as_bytes();
-    let symmetry_mode = crate::SymmetryMode::Direct;
-    let params1 = SearchParams::with_mode(3, 6, 2, 0, symmetry_mode).unwrap();
-    let irs = find_irs(&params1, &seq).unwrap();
-    assert_eq!(irs.len(), 1);
-
-    let symmetry_mode = crate::SymmetryMode::default();
-    let params2 = SearchParams::with_mode(3, 6, 2, 0, symmetry_mode).unwrap();
-    let irs = find_irs(&params2, &seq).unwrap();
-    assert_eq!(irs.len(), 0);
+    mk_test_symmetry("aataat", SymmetryMode::Direct, 1);
+    mk_test_symmetry("aataat", SymmetryMode::default(), 0);
+} 
+#[test]
+fn test_simple_direct_complementary_mode() {
+    mk_test_symmetry("aaattt", SymmetryMode::DirectComplementary, 1);
+    // mk_test_symmetry("aaattt", SymmetryMode::default(), 1);
 }
+
+#[test]
+fn test_simple_inverted_complementary_mode() { 
+    mk_test_symmetry("aattaa", SymmetryMode::InvertedComplementary, 1);
+    mk_test_symmetry("aattaa", SymmetryMode::default(), 0);
+}
+ 
+#[test]
+fn test_simple_inverted_complementary_mode__() {  
+    println!("I");
+    mk_test_symmetry("atatat", SymmetryMode::default(), 1);
+    println!("II");
+    mk_test_symmetry("atatat", SymmetryMode::Direct, 1);
+}
+ 

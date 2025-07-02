@@ -49,6 +49,7 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
     // Build matchmatrix
     let matrix = matrix::MatchMatrix::new();
     let complement = constants::build_complement_array();
+    println!("{params:?}");
 
     // Construct s = seq + '$' + complement(reverse(seq)) + '#'
     let n = sanitized_seq.len();
@@ -65,6 +66,8 @@ pub fn find_irs(params: &SearchParams, seq: &[u8]) -> Result<Vec<(usize, usize, 
     }
     s[n] = b'$';
     s[2 * n + 1] = b'#';
+
+    println!("{s:?}");
 
     // Construct Suffix Array (sa) & Inverse Suffix Array
     let sa: Vec<i32> = divsufsort::sort(&s).into_parts().1;

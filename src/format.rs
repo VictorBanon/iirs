@@ -41,6 +41,7 @@ pub fn fmt_classic(
     matrix: &MatchMatrix,
     complement: &[u8; 128],
 ) -> String {
+    println!("[FMT] {irs:?} {seq:?}");
     let mut out = String::new();
 
     let pad = "         ";

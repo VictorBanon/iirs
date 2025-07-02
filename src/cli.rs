@@ -68,7 +68,7 @@ impl Cli {
     /// The `Config` is different for every sequence since it contains the sequence name (id)
     /// and the output file. The `SearchParams` do not change.
     pub fn try_from_args(&self, check_bounds: bool) -> Result<Vec<(Config, OwnedRecord)>> {
-        let params = SearchParams::new(self.min_len, self.max_len, self.max_gap, self.mismatches)?;
+        let params = SearchParams::with_mode(self.min_len, self.max_len, self.max_gap, self.mismatches, self.symmetry_mode.clone())?;
         let records = safe_extract_records(&self.input_file, &self.seq_names)?;
         let only_one_sequence_found = records.len() == 1;
         let mut config_record_pairs = Vec::new();

@@ -14,20 +14,6 @@ pub enum SymmetryMode {
     DirectComplementary,
 }
 
-impl std::str::FromStr for SymmetryMode {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "inverted" | "i" => Ok(SymmetryMode::Inverted),
-            "inverted_complementary" | "ic" => Ok(SymmetryMode::InvertedComplementary),
-            "direct" | "d" => Ok(SymmetryMode::Direct),
-            "direct_complementary" | "dc" => Ok(SymmetryMode::DirectComplementary),
-            _ => Err(format!("Invalid symmetry mode: {}", s)),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct SearchParams {
     pub min_len: usize,
